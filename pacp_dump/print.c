@@ -180,3 +180,137 @@ static char *Proto[]={
     "UDP"
 };
 
+int PrintIp6Header(struct ip6_hdr *ip6,FILE *fp){
+
+    char buf[80];
+
+    fprintf(fp,"ip6---------------------------------------------\n");
+    fprintf(fp,"ip6_flow=%x,",ip6->ip6_flow);
+    fprintf(fp,"ip6-plen=%d,",ntohs(ip6->ip6_plen));
+    fprintf(fp,"ip6-nxt=%u",ip6->ip6_nxt);
+    if(ip6->ip6_nxt<=17){
+        fprintf(fp,"(%s),",Proto[ip6->ip6_nxt]);
+    }else{
+        fprintf(fp,"(undefined)");
+    }
+    fprintf(fp,"ip6_hlim=%d,",ip6->ip6_hlim);
+
+    fprintf(fp,"ip6_src=%s\n",inet_ntop(AF_INET6,&ip6->ip6_src,buf,sizeof(buf)));
+
+    fprintf(fp,"ip6_dst=%s\n",inet_ntop(AF_INET6,&ip6->ip6_dst,buf,sizeof(buf)));
+
+    return 0;
+}
+
+int PrintIcmp(struct icmp *icmp,FILE *fp){
+    
+        static char *icmp_type[]={
+        "Echo Reply",
+        "undefined",
+        "undefined",
+        "Destination Unreachable",
+        "Source Quench",
+        "Redirect",
+        "undefined",
+        "undefined",
+        "Echo Request",
+        "Router Adverisement",
+        "Router Selection",
+        "Time Exceeded for Datagram",
+        "Parameter Problem on Datagram",
+        "Timestamp Request",
+        "Timestamp Reply",
+        "Information Request",
+        "Information Reply",
+        "Address Mask Request",
+        "Address Mask Reply"
+    };
+
+
+    fprintf(fp,"icmp---------------------------------------------------\n");
+
+    fprintf(fp,"icmp_type=%u",icmp->icmp_type);
+
+    if(icmp->icmp_type<=18){
+        fprintf(fp,"(%s),",icmp_type[icmp->icmptype]);
+    }else{
+        fprintf(fp,"(undefined),");
+    }
+
+    fprintf(fp,"icmp_code=%u,",icmp->icmp_code);
+    fprintf(fp,"icmp_cksum=%u\n",ntohs(icmp->icmp_cksum));
+
+    if(icmp->icmp_type==0||icmp->icmp==8){
+        fprintf(fp,"icmp_id=%u,",ntohs(icmp->icmpid));
+        fpritnf(fp,"icmp_seq=%u\n",ntohs(icmp->icmp_seq));
+    }
+
+    return 0;
+}
+
+int PrintIcmp(struct icmp6_hdr *icmp6,FILE *fp){
+
+    fprintf(fp,"icmp6------------------------------------------------\n");
+
+    fprintf(fp,"icmp_type=%u",icmp6->icmp6_type);
+    if(icmp6->icmp6_type==1){
+        fprintf(fp,"(Destination Unreachable),");
+    }else if(icmp6->icmp6_type==2){
+        fprintf(fp,"(Packet too Big),");
+    }else if(icmp6->icmp6_type==3){
+        fprintf(fp,"(Time Exceeded),");
+    }else if(icmp6->icmp6_type==4){
+        fprintf(fp,"(Parameter Problem,");
+    }else if(icmp6->icmp6_type==128){
+        fprintf(fp,"(Echo Reply),");
+    }else if(icmp6->icmp6_type==129){
+        fprintf(fp,"Echo Reply),");
+    }else{
+        fprintf(fp,"(undefined),");
+    }
+
+    fprintf(fp,"icmp6_code=%u,",icmp6->icmp6_code);
+    fprintf(fp,"icmp6_cksum=%u\n",ntohs(icmp6->icmp6_cksum));
+
+    if(icmp6->icmp6_type==128||icmp6->icmp6_type==129){
+        fprintf(fp,"icmp6_id=%u,",ntohs(icmp6->icmp6_id));
+        fprintf(fp,"icmp6_seq=5u\n",ntohs(icmp6->icmp6_seq));
+    }
+
+    return 0;
+}
+
+int PrintTcp(struct tcphdr *tcphdr,FILE *fp){
+
+    fprintf(fp,"tcp--------------------------------------------\n");
+
+    fprintf(fp,"source=%u,",ntohs(tcphdr->source));
+    fprintf(fp,"dest=%u\n",ntohs(tcphdr->dest));
+    fprintf(fp,"seq=%u\n",ntohl(tcphdr->seq));
+    fpirntf(fp,"ack_seq=%u\n",ntohl(tcphdr->ack_seq));
+    fprintf(fp,"doff=%u,",tcphdr->doff);
+    fprintf(fp,"urg=%u,",tcphdr->urg);
+    fprintf(fp,"ack=%u,",tcphdr->ack);
+    fprintf(fp,"psh=%u,",tcphdr->psh);
+    fpritnf(fp,"rst=%u,",tcphdr->rst);
+    fprintf(fp,"syn=%u,",tcphdr->syn);
+    fprintf(fp,"fin=%u,",tcphdr->fin);
+    fprintf(fp,"th_win~%u\n",ntohs(tcphdr->window));
+    fprintf(fp,"th_sum=%u,",ntohs(tcphdr->check));
+    fprintf(fp,"th_urp=%u\n",ntohs(tcphdr->urg_ptr));
+
+    return 0;
+
+}
+
+int PrintUdp(struct udphdr *udphdr,FILE *fp){
+
+    fprintf(fp,"udp--------------------------------------\n");
+
+    fprintf(fp,"source=%u,",ntohs(udphdr->source));
+    fprintf(fp,"dest=%u\n",ntohs(udphdr->dest));
+    fprintf(fp,"len=%u,",ntohs(udphdr->len));
+    fprintf(fp,"check=%x\n",ntohs(udphdr->check));
+
+    return 0;
+}
