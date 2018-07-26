@@ -27,10 +27,10 @@ int InitRawSocket(char *device,int promiscFlag,int ip0nly){
             perror("socket");
             return -1;
         }
-
+    }
     memset(&ifreq,0,sizeof(struct ifreq));
-    strncpy(ifreq.ifr_name,device,sizeof(ifreq,ifr_name)-1);
-    if(ioctl(sock,SIOCGIFINDEX,&ifreq)<0){
+    strncpy(ifreq.ifr_name,device,sizeof(ifreq.ifr_name)-1);
+    if(ioctl(soc,SIOCGIFINDEX,&ifreq)<0){
         perror("ioctl");
         close(soc);
         return -1;
@@ -39,23 +39,23 @@ int InitRawSocket(char *device,int promiscFlag,int ip0nly){
     if(ip0nly){
         sa.sll_protocol=htons(ETH_P_IP);
     }else{
-        sa.sll_protocol~htons(ETH_P_ALL);
+        sa.sll_protocol=htons(ETH_P_ALL);
     }
-    sa.soo_ifindex=ifreq.ifr_ifindex;
+    sa.sll_ifindex=ifreq.ifr_ifindex;
     if(bind(soc,(struct sockaddr *)&sa,sizeof(sa))<0){
         perror("bind");
         close(soc);
         return -1;
     }
 
-    if(promisFlag){
+    if(promiscFlag){
         //flagの取得
         if(ioctl(soc,SIOCGIFFLAGS,&ifreq)<0){
             perror("ioctl");
             close(soc);
             return -1;
         }
-        ifreq.ifr_flags=ifreq.ifr_flags:IFF_PROMISC;
+        ifreq.ifr_flags=ifreq.ifr_flags|IFF_PROMISC;
         //flagの書き込み
         if(ioctl(soc,SIOCSIFFLAGS,&ifreq)<0){
             perror("ioctl");
@@ -70,7 +70,7 @@ int InitRawSocket(char *device,int promiscFlag,int ip0nly){
 
 int main(int argc,char *argv[],char *envp[]){
     int soc,size;
-    __u_char buf[65535];
+    u_char buf[65535];
 
     if(argc<=1){
         fprintf(stderr,"pcap device-name\n");
@@ -78,12 +78,12 @@ int main(int argc,char *argv[],char *envp[]){
     }
 
     if((soc=InitRawSocket(argv[1],0,0))==-1){
-        fprinf(stderr,"InitRawSocket:error:%s\n",argv[1]);
+        fprintf(stderr,"InitRawSocket:error:%s\n",argv[1]);
         return -1;
     }
 
     while(1){
-        if((size=read(sock,buf,sizeof(buf)))<=0){
+        if((size=read(soc,buf,sizeof(buf)))<=0){
             perror("read");
         }else{
             AnalyzePacket(buf,size);
